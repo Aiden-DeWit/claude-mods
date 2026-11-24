@@ -1,0 +1,15 @@
+{
+  "name": "aiden-dewit-mods",
+  "owner": { "name": "Aiden-DeWit", "url": "https://github.com/Aiden-DeWit" },
+  "description": "Aiden's Claude Code mods.",
+  "plugins": [
+    {
+      "name": "desktop-looks",
+      "source": "./desktop-looks",
+      "description": "Fourteen art-style looks for the Claude desktop app, one per session, cycling each time you open Claude.",
+      "version": "0.1.0",
+      "category": "appearance",
+      "tags": ["mod", "theme", "desktop", "background"]
+    }
+  ]
+}
