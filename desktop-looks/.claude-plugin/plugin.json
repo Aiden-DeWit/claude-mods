@@ -1,0 +1,7 @@
+{
+  "name": "desktop-looks",
+  "version": "0.1.0",
+  "description": "Fourteen art-style looks for the Claude desktop app, one per session, cycling each time you open Claude.",
+  "author": { "name": "Aiden-DeWit" },
+  "license": "MIT"
+}
