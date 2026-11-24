@@ -84,6 +84,58 @@ const starField = (color: string, count: number, seed: number) => {
   return s
 }
 
+// A spiral galaxy drawn flat around 0,0; the caller tilts and places it.
+const galaxy = (c: Palette, u: string) => {
+  const rnd = seeded(19)
+  let arms = ''
+  let dust = ''
+  for (let arm = 0; arm < 2; arm++) {
+    const pts: string[] = []
+    for (let i = 0; i <= 80; i++) {
+      const t = i / 80
+      const theta = t * 3.6 * Math.PI + arm * Math.PI
+      const r = 6 + t * 92
+      const x = r * Math.cos(theta)
+      const y = r * Math.sin(theta)
+      pts.push(`${n(x)} ${n(y)}`)
+      for (let k = 0; k < 2; k++) {
+        const jx = x + (rnd() - 0.5) * 14 * (0.4 + t)
+        const jy = y + (rnd() - 0.5) * 14 * (0.4 + t)
+        const op = n((1 - t) * 0.6 + 0.25)
+        const col = rnd() > 0.7 ? c.a3 : c.text
+        dust += `<circle cx="${n(jx)}" cy="${n(jy)}" r="${rnd() > 0.85 ? 1.2 : 0.6}" fill="${col}" opacity="${op}"/>`
+      }
+    }
+    arms += `<path d="M${pts.join(' L')}" fill="none" stroke="${c.accent}" stroke-width="10" stroke-linecap="round" opacity=".35"/>`
+  }
+  return `<defs>
+    <radialGradient id="core${u}"><stop offset="0" stop-color="${c.a3}" stop-opacity=".95"/><stop offset=".35" stop-color="${c.accent}" stop-opacity=".45"/><stop offset="1" stop-color="${c.accent}" stop-opacity="0"/></radialGradient>
+    <radialGradient id="halo${u}"><stop offset="0" stop-color="${c.a2}" stop-opacity=".9"/><stop offset="1" stop-color="${c.a2}" stop-opacity="0"/></radialGradient>
+    <filter id="armBlur${u}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>
+  </defs>
+  <circle r="115" fill="url(#halo${u})"/>
+  <g filter="url(#armBlur${u})">${arms}</g>
+  ${dust}
+  <circle r="34" fill="url(#core${u})"/>`
+}
+
+// Shooting stars: each sits at its own place and angle, on its own timer.
+const METEORS: [number, number, number, number, number][] = [
+  // x, y, angle, seconds per pass, delay
+  [20, 18, 22, 19, 1],
+  [250, 8, 32, 27, 9],
+  [330, 70, 145, 23, 15],
+  [10, 150, 18, 31, 5],
+  [140, 225, -12, 29, 21],
+  [370, 120, 160, 37, 27],
+]
+const meteors = (c: Palette, u: string) =>
+  `<defs><linearGradient id="tail${u}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="34" y2="0"><stop offset="0" stop-color="${c.text}" stop-opacity="0"/><stop offset="1" stop-color="${c.text}" stop-opacity=".95"/></linearGradient></defs>` +
+  METEORS.map(
+    ([x, y, a, dur, delay]) =>
+      `<g transform="translate(${x} ${y}) rotate(${a})"><g class="meteor" style="animation-duration:${dur}s;animation-delay:${delay}s"><line x1="0" y1="0" x2="34" y2="0" stroke="url(#tail${u})" stroke-width="1.3" stroke-linecap="round"/><circle cx="34" cy="0" r="1.1" fill="${c.text}"/></g></g>`,
+  ).join('')
+
 const MOTION = `
 .tw { animation: tw 6s ease-in-out infinite; }
 @keyframes tw { 0%, 100% { opacity: .9; } 50% { opacity: .35; } }
@@ -93,8 +145,9 @@ const MOTION = `
 @keyframes drift { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-14px, 8px); } }
 .wave { animation: wave 14s ease-in-out infinite; }
 @keyframes wave { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-18px); } }
-.comet { opacity: 0; animation: comet 22s linear infinite; }
-@keyframes comet { 0% { opacity: 0; transform: translate(0, 0); } 2% { opacity: .9; } 9% { opacity: 0; transform: translate(170px, 70px); } 100% { opacity: 0; transform: translate(170px, 70px); } }
+.meteor { opacity: 0; animation: meteor 23s linear infinite; }
+@keyframes meteor { 0% { opacity: 0; transform: translateX(0); } 1.5% { opacity: .95; } 6% { opacity: 0; transform: translateX(130px); } 100% { opacity: 0; transform: translateX(130px); } }
+.galaxy { animation: spin 420s linear infinite; transform-box: fill-box; transform-origin: 50% 50%; }
 .spin { animation: spin 240s linear infinite; transform-box: fill-box; transform-origin: 50% 50%; }
 @keyframes spin { to { transform: rotate(360deg); } }
 `
@@ -107,18 +160,12 @@ export const LOOKS: Look[] = [
     D: { bg: '#070a17', panel: '#0e1226', text: '#e9eaf7', muted: '#9a9dc0', accent: '#8f88ff', a2: '#2a1b5c', a3: '#e2a882' },
     art: (c, u) => `<defs>
       <radialGradient id="nebA${u}"><stop offset="0" stop-color="${c.a2}"/><stop offset="1" stop-color="${c.a2}" stop-opacity="0"/></radialGradient>
-      <radialGradient id="nebB${u}"><stop offset="0" stop-color="${c.accent}" stop-opacity=".22"/><stop offset="1" stop-color="${c.accent}" stop-opacity="0"/></radialGradient>
-      <linearGradient id="pl${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c.a3}"/><stop offset="1" stop-color="${c.accent}" stop-opacity=".75"/></linearGradient>
-      <linearGradient id="tail${u}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${c.text}" stop-opacity="0"/><stop offset="1" stop-color="${c.text}" stop-opacity=".9"/></linearGradient>
     </defs>
-    <g class="drift"><ellipse cx="40" cy="30" rx="160" ry="90" fill="url(#nebA${u})"/><ellipse cx="360" cy="230" rx="150" ry="80" fill="url(#nebB${u})"/></g>
+    <g class="drift"><ellipse cx="30" cy="20" rx="150" ry="85" fill="url(#nebA${u})"/></g>
+    <g transform="translate(345 198) rotate(-28) scale(1 .46)" opacity=".9"><g class="galaxy">${galaxy(c, u)}</g></g>
     ${starField(c.text, 70, 7)}
-    <g class="comet"><line x1="10" y1="20" x2="50" y2="36" stroke="url(#tail${u})" stroke-width="1.4" stroke-linecap="round"/></g>
-    <circle cx="352" cy="38" r="6" fill="${c.muted}" opacity=".7"/>
-    <path d="M294 210 A 58 13 0 0 1 410 210" transform="rotate(-18 352 210)" fill="none" stroke="${c.a3}" stroke-width="2" opacity=".55"/>
-    <circle cx="352" cy="210" r="32" fill="url(#pl${u})"/>
-    <path d="M294 210 A 58 13 0 0 0 410 210" transform="rotate(-18 352 210)" fill="none" stroke="${c.a3}" stroke-width="2.4" opacity=".85"/>
-    <circle cx="36" cy="218" r="11" fill="${c.a2}"/><circle cx="32" cy="214" r="11" fill="${c.bg}" opacity=".35"/>`,
+    ${meteors(c, u)}
+    <circle cx="352" cy="38" r="5" fill="${c.muted}" opacity=".6"/>`,
   },
   {
     id: 'minimal',

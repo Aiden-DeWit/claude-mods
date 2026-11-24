@@ -6,7 +6,7 @@ A Claude Code mod that gives the Claude desktop app a new look each time you ope
 
 Deep Space, Modern Minimal, Botanical, Coastal, Zen Garden, Nordic, Art Deco, Bauhaus, Synthwave, Night Sky, Desert, Stationery, Watercolor and Blueprint.
 
-Deep Space and Night Sky have twinkling stars (Deep Space also has the odd shooting star). Botanical leaves sway, Coastal waves roll, and a few others drift slowly. If you have reduced motion turned on, the art stays still.
+Deep Space has a slowly turning spiral galaxy, twinkling stars and shooting stars that cross different corners at different times. Night Sky has twinkling stars. Botanical leaves sway, Coastal waves roll, and a few others drift slowly. If you have reduced motion turned on, the art stays still.
 
 ## Commands
 
